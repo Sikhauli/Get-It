@@ -1,29 +1,86 @@
-import { View, Text, StyleSheet, ScrollView,Linking } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, StyleSheet, ScrollView,Linking, TextInput } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import CustomInput from '../../CustomInput/CustomInput'
 import CustomButton from '../../CustomButton/CustomButton';
 import GoogleButton from 'react-google-button'
+import { auth } from '../../config/firebase'
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
 
-const SignUpScreen = () => {
+
+const SignUpScreen = ({navigation}) => {
+
+  const [errMsg, setErrMsg] = useState('');
+
   const [firstname, setFirstName] = useState('');
   const [lastname, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmpassword, setConfirmPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const onCreateAccountPressed = () => {
-    console.warn('onCreateAccountPressed');
 
-  }
+   let history = useNavigation();
 
-  const onSignInGoogle = () => {
-    console.warn('onSignInGoogle');
-  }
+      const register = () =>{
+          createUserWithEmailAndPassword(auth, email, firstname, lastname, password, confirmPassword).then(()=>{
+//              navigation.Profile();
+              console.log(email, firstname)
+          }).catch((error)=>{
+              console.log(error);
+              alert("Error!!!");
+          })
+      }
 
-  const onSignInPressed = () => {
-    console.warn('Sign in');
 
-  }
+//  useEffect(()=>{
+//    if (auth.currentUser) {
+//        navigation.navigate('Home');
+//    }
+//}, [])
+//
+//
+//console.log("Email",  email)
+//console.log("L-name",  lastname)
+//console.log("F-name",  firstname)
+//
+//const registerWithEmail = async() => {
+//  //check if inputs are empty
+//  if (email === '') {
+//      //email empty
+//      setErrMsg('Email is required to register');
+//      alert('Email is required to register');
+//  } else {
+//      if (password === '') {
+//          //new password empty
+//          setErrMsg('Password is required to register');
+//      } else {
+//          if (confirmpassword === '') {
+//              //confirm password empty
+//              setErrMsg('Confirm password is required to register');
+//          } else {
+//              if (password !== confirmpassword) {
+//                  //pasword does not match
+//                  setErrMsg('Passwords entered does not match');
+//              } else {
+//                  //good to go
+//                  await createUserWithEmailAndPassword(auth, firstname, lastname, email, password).then(
+//                      userCridential => {
+//                          setErrMsg('');
+//                          navigation.navigate('Home');
+//                      }
+//                  ).catch(
+//                      err => {
+//                          setErrMsg(err.message);
+//                      }
+//                  )
+//              }
+//          }
+//      }
+//  }
+//}
+
+
+
 
   return (
     <ScrollView>
@@ -41,19 +98,22 @@ const SignUpScreen = () => {
         </View>
 
         <View style={{ marginTop: 30 }}>
-          <CustomInput placeholder="First Name" value={firstname} setValue={setFirstName} />
+          <TextInput style={styles.input} placeholder="First Name" onChangeText={value => setFirstName(value)} />
 
-          <CustomInput placeholder="Last Name" value={lastname} setValue={setLastName} />
+          <TextInput style={styles.input} placeholder="Last Name" onChangeText={value => setLastName(value)} />
 
-          <CustomInput placeholder="Enter Email" value={email} setValue={setEmail} />
+          <TextInput style={styles.input} placeholder="Enter Email" onChangeText={value => setEmail(value)} />
 
-          <CustomInput placeholder="Password" value={password} setValue={setPassword} secureTextEntry />
+          <TextInput style={styles.input} placeholder="Password" onChangeText={value => setPassword(value)} secureTextEntry />
 
-          <CustomInput placeholder="Confirm password" value={confirmpassword} setValue={setConfirmPassword} secureTextEntry />
+          <TextInput style={styles.input} placeholder="Confirm password" onChangeText={value => setConfirmPassword(value)} secureTextEntry />
 
         </View>
+
+        {errMsg !== '' ? (<View><Text style={styles.badErr}>{errMsg}</Text></View>) : (<View><Text style={styles.goodErr}></Text></View>) }
+
         <View>
-          <CustomButton text="Create Account" onPress={onCreateAccountPressed} />
+          <CustomButton text="Create Account" onPress={registerWithEmail} />
         </View>
         {/* <View style={{alignItems:'center',flexDirection:'row'}}>
           <Icon name="google" size={25} color="red"/>
@@ -64,7 +124,7 @@ const SignUpScreen = () => {
         </View>
         <View style={{flexDirection:'row',marginTop:20}}>
             <Text style={{color:'#fff'}}>Have an account?</Text>
-            <Text style={{color:'#20DC49'}} 
+            <Text style={{color:'#20DC49'}}
             onPress={()=>Linking.openURL('')}>SignIn
             </Text>
         </View>
@@ -108,6 +168,30 @@ const styles = StyleSheet.create({
     width: 160,
     marginRight: -35
   },
+  goodErr: {
+    backgroundColor: 'white',
+    color: 'maroon',
+    // width: '80vw',
+    // height: '10vh',
+},
+  badErr:{
+
+    // width: '80vw',
+    // height: '10vh',
+    color:'White',
+    backgroundColor: 'maroon'
+
+
+  },
+  input:{
+    height: '5vh',
+    width: '60vw',
+    borderColor: 'green',
+    borderWidth: 2,
+    marginTop: '2vh',
+    outlineColor: "none",
+    padding: 7,
+  }
 
 
 });

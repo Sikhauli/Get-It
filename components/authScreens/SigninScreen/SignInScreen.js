@@ -1,42 +1,51 @@
-import { View, Text, StyleSheet, ScrollView, Linking, Image } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, StyleSheet, ScrollView, Linking, Image, TextInput } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import CustomInput from '../../CustomInput/CustomInput'
 import CustomButton from '../../CustomButton/CustomButton';
 import GoogleButton from 'react-google-button'
-// import basket from '../../../assets/trolley.jpg'
+import basket from '../../../assets/trolley.jpg'
+import { auth } from '../../config/firebase'
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
-const SignInScreen = () => {
+const SignInScreen = ({navigation}) => {
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    auth
-      .signInWithEmailAndPassword(email, password)
-      .then(userCredentials => {
-        const user = userCredentials.user;
-        console.log('Logged in with:', user.email);
-      })
-      .catch(error => alert(error.message))
+  const [errMsg, setErrMsg] = useState('');
+
+    useEffect(()=>{
+        if (auth.currentUser) {
+            navigation.navigate('Home');
+        }
+    }, [])
+
+    const loginWithEmail = async() => {
+      if (email === '') {
+          setErrMsg('Email is required to log in');
+      } else {
+          if (password === '') {
+              setErrMsg('Password is required to login')
+          } else {
+              await signInWithEmailAndPassword(auth, email, password).then(
+                  userCridential => {
+                      navigation.navigate('Home')
+                  }
+              ).catch(
+                  err => {
+                      setErrMsg(err.message);
+                  }
+              )
+          }
+      }
   }
 
-  // const onSignInPressed = () => {
-  //   console.warn('onSignInPressed');
 
-  // };
-
-  // const onSignUpPressed = () => {
-  //   console.warn('onSignUpPressed');
-
-  // };
-
-  // const onSignInGoogle = () => {
-  //   console.warn('onSignInGoogle');
-  // };
   return (
     <ScrollView>
       <View style={styles.root}>
         <View>
-     {/* <Image source={basket} style={{ width: 200, height: 180 }} /> */}
+       <Image source={basket} style={{ width: 200, height: 180 }} />
         </View>
         <View>
           <Text style={{ color: '#20DC49', fontSize: 30, fontWeight: 'bold' }}>Welcome Back</Text>
@@ -50,13 +59,14 @@ const SignInScreen = () => {
           <View style={styles.line2}></View>
         </View>
         <View style={{ marginTop: 30 }}>
-          <CustomInput
+          <TextInput
+          style={styles.input}
            placeholder="Email"
            value={email}
            onChangeText={text => setEmail(text)}
             />
-          <CustomInput 
-          placeholder="Password"        
+          <TextInput
+          placeholder="Password"
           value={password}
           onChangeText={text => setPassword(text)}
           style={styles.input}
@@ -64,7 +74,7 @@ const SignInScreen = () => {
           />
         </View>
         <View>
-          <CustomButton text="Log in Account" onPress={handleLogin}/>
+          <CustomButton text="Log in Account" onPress={loginWithEmail}/>
         </View>
         <View>
           <GoogleButton style={{ width: 200, marginTop: 20 }} />
@@ -120,7 +130,15 @@ const styles = StyleSheet.create({
     width: 160,
     marginRight: -35
   },
-
+  input:{
+    height: '5vh',
+    width: '60vw',
+    borderColor: 'green',
+    borderWidth: 2,
+    marginTop: '2vh',
+    outlineColor: "none",
+    padding: 7,
+  }
 
 });
 
